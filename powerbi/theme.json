@@ -1,0 +1,15 @@
+{
+  "name": "HR Attrition Theme",
+  "dataColors": ["#1F3A5F", "#D64550", "#B8C2CC", "#F2A541", "#4C8BA8", "#7A8B99", "#8E5572", "#3E7C59"],
+  "background": "#FFFFFF",
+  "foreground": "#1F3A5F",
+  "tableAccent": "#1F3A5F",
+  "good": "#3E7C59",
+  "neutral": "#F2A541",
+  "bad": "#D64550",
+  "textClasses": {
+    "title": { "fontFace": "Segoe UI Semibold", "fontSize": 14, "color": "#1F3A5F" },
+    "label": { "fontFace": "Segoe UI", "fontSize": 10, "color": "#444444" },
+    "callout": { "fontFace": "Segoe UI Semibold", "fontSize": 28, "color": "#1F3A5F" }
+  }
+}

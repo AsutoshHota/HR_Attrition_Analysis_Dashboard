@@ -1,0 +1,5 @@
+TenureBand,Employees,Leavers,AttritionRate
+0-1 yrs,215,75,0.3488
+2-5 yrs,561,87,0.1551
+6-10 yrs,448,55,0.1228
+11+ yrs,246,20,0.0813

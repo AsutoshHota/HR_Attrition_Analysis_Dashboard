@@ -1,0 +1,5 @@
+SalaryBand,Employees,Leavers,AttritionRate
+Low (<3K),395,113,0.2861
+Mid (3K-6K),519,66,0.1272
+High (6K-10K),275,33,0.12
+Very High (10K+),281,25,0.089

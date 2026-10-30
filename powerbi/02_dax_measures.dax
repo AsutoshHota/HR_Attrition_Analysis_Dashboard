@@ -1,0 +1,105 @@
+// =====================================================================
+// HR ATTRITION DASHBOARD - DAX MEASURES
+// =====================================================================
+// Main table is called  HR  (the Power Query output).
+// Create a separate empty table to hold measures:
+//   Home > Enter data > name it "_Measures" > Load
+// Then: right-click _Measures > New measure, and paste each one below.
+// =====================================================================
+
+
+// ---------------- CORE KPIs ------------------------------------------
+Total Employees = COUNTROWS ( HR )
+
+Leavers = SUM ( HR[Attrited] )
+
+Active Employees = [Total Employees] - [Leavers]
+
+Attrition Rate = DIVIDE ( [Leavers], [Total Employees] )
+
+
+// ---------------- BENCHMARK (ignores slicers/filters) -----------------
+Company Attrition Rate =
+CALCULATE ( [Attrition Rate], ALL ( HR ) )
+
+// Gap vs company average, in percentage points (e.g. +4.5)
+Rate vs Company (pp) =
+( [Attrition Rate] - [Company Attrition Rate] ) * 100
+
+// How many times higher than average (e.g. 2.8x)
+Risk Multiple =
+DIVIDE ( [Attrition Rate], [Company Attrition Rate] )
+
+
+// ---------------- RISK CLASSIFICATION ---------------------------------
+Risk Level =
+VAR _m = [Risk Multiple]
+RETURN
+    SWITCH (
+        TRUE (),
+        ISBLANK ( _m ), BLANK (),
+        _m >= 2, "Critical",
+        _m >= 1.25, "High",
+        "Normal"
+    )
+
+// Hex colour for conditional formatting (Format > Field value)
+Risk Colour =
+SWITCH (
+    [Risk Level],
+    "Critical", "#B71C1C",
+    "High", "#E57373",
+    "Normal", "#B8C2CC",
+    "#B8C2CC"
+)
+
+
+// ---------------- SUPPORTING KPIs -------------------------------------
+Avg Monthly Income = AVERAGE ( HR[MonthlyIncome] )
+
+Avg Tenure (Yrs) = AVERAGE ( HR[YearsAtCompany] )
+
+Avg Age = AVERAGE ( HR[Age] )
+
+// Attrition rate among employees working overtime
+Overtime Attrition Rate =
+CALCULATE ( [Attrition Rate], HR[OverTime] = "Yes" )
+
+Non-Overtime Attrition Rate =
+CALCULATE ( [Attrition Rate], HR[OverTime] = "No" )
+
+// Share of all leavers that come from the current selection
+Share of All Leavers =
+DIVIDE ( [Leavers], CALCULATE ( [Leavers], ALL ( HR ) ) )
+
+
+// ---------------- DYNAMIC TITLE (for cards / visual titles) ----------
+Headline =
+"Attrition is " & FORMAT ( [Attrition Rate], "0.0%" ) &
+" ("  & FORMAT ( [Leavers], "#,0" ) & " of " &
+FORMAT ( [Total Employees], "#,0" ) & " employees)"
+
+
+// =====================================================================
+// CALCULATED TABLE  -  HIGH-RISK GROUPS
+// Modeling > New table.   Static snapshot (does not react to slicers).
+// Segments with fewer than 20 employees are excluded because their
+// rates are statistically unreliable.  Matches high_risk_groups.csv.
+// =====================================================================
+High Risk Groups =
+VAR _company =
+    DIVIDE ( SUM ( HR[Attrited] ), COUNTROWS ( HR ) )
+VAR _segments =
+    ADDCOLUMNS (
+        SUMMARIZE ( HR, HR[Department], HR[TenureBand], HR[SalaryBand], HR[OverTime] ),
+        "Employees", CALCULATE ( COUNTROWS ( HR ) ),
+        "Leavers", CALCULATE ( SUM ( HR[Attrited] ) )
+    )
+VAR _filtered =
+    FILTER ( _segments, [Employees] >= 20 )
+RETURN
+    ADDCOLUMNS (
+        _filtered,
+        "AttritionRate", DIVIDE ( [Leavers], [Employees] ),
+        "RiskMultiple", DIVIDE ( DIVIDE ( [Leavers], [Employees] ), _company )
+    )
